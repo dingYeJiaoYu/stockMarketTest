@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <QJsonObject>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,7 +23,13 @@ public:
 private:
     Ui::Widget *ui;
     QNetworkAccessManager* m_manager;
-    void sendGetRequest(const QString &url);
+    QString m_baseUrl;
+    QJsonObject m_requestObj;
+    QJsonObject m_req;
+    QUrl  m_url;
+    QString m_token;
+    void sendGetRequest();
+    void makeUrl();
 private slots:
     void onReplyFinished(QNetworkReply *reply);
 };

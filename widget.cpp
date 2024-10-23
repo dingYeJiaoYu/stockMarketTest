@@ -5,17 +5,23 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QUrl>
 #include <QJsonDocument>
-#include <QJsonObject>
+#include <QJsonArray>
+#include <QUuid>
 #include <QDebug>
+#include <QUrlQuery>
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
+
+    m_token =   "1c71b87778c507b69ae8e80a6ae3e730-c-app";
     m_manager = new QNetworkAccessManager(this);
     connect(m_manager, &QNetworkAccessManager::finished, this, &Widget::onReplyFinished);
-    QString url = "https://quote.tradeswitcher.com/quote-stock-b-api/depth-tick?token=325b74d95d2721dedd5261537391eb83-c-app&query= { \"trace\": \"bdb19512-a799-4c1e-b593-916b01b7a0a9\", \"data\": { \"symbol_list\": [ { \"code\": \"TSLA.US\" }, { \"code\": \"300750.SZ\" } ] } }"; // 示例 URL
-    sendGetRequest(url);
+    // QString url = "https://quote.tradeswitcher.com/quote-stock-b-api/depth-tick?token=1c71b87778c507b69ae8e80a6ae3e730-c-app&query= { \"trace\": \"bdb19512-a799-4c1e-b593-916b01b7a0a9\", \"data\": { \"symbol_list\": [ { \"code\": \"TSLA.US\" }, { \"code\": \"AAPL.US\" } ] } }"; // 示例 URL
+    makeUrl();
+    sendGetRequest();
 }
 
 Widget::~Widget()
@@ -23,13 +29,39 @@ Widget::~Widget()
     delete ui;
 }
 
-void Widget::sendGetRequest(const QString &url)
+void Widget::sendGetRequest()
 {
-    QUrl qurl(url);
-    QNetworkRequest request(qurl);
+    QNetworkRequest request(m_url);
 
     // 发起 GET 请求
     m_manager->get(request);
+}
+
+void Widget::makeUrl()
+{
+    m_baseUrl   =   "https://quote.tradeswitcher.com/quote-stock-b-api/depth-tick";
+    QJsonValue tracevalue   =   QUuid::createUuid().toString();
+
+    QJsonObject data;
+    QJsonArray symbolArr;
+    QJsonObject s1,s2;
+    s1["code"]  =   "TSLA.US";
+    s2["code"]  =   "300823.SZ";
+
+    symbolArr.append(s1);
+    symbolArr.append(s2);
+
+    data["symbol_list"]   = symbolArr;
+    m_req.insert("trace",tracevalue);
+    m_req.insert("data",data);
+
+    m_url.setUrl(m_baseUrl);
+    QJsonDocument jdoc(m_req);
+    QUrlQuery params;
+    params.addQueryItem("token",m_token);
+    params.addQueryItem("query",jdoc.toJson());
+    m_url.setQuery(params);
+    qDebug()<<m_url;
 }
 
 void Widget::onReplyFinished(QNetworkReply *reply)
@@ -46,8 +78,8 @@ void Widget::onReplyFinished(QNetworkReply *reply)
         QJsonObject jsonObject = jsonResponse.object();
 
         // 处理 JSON 数据
-        // qDebug() << "Parsed JSON:" << jsonObject;
-        qDebug()<<jsonObject.keys();
+        qDebug() << "Parsed JSON:" << jsonObject;
+        // qDebug()<<jsonObject.keys();
 
     } else {
         // 输出错误信息
