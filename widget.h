@@ -12,6 +12,11 @@ QT_END_NAMESPACE
 
 class QNetworkAccessManager;
 class QNetworkReply;
+class QLineSeries;
+class QListWidgetItem;
+class QValueAxis;
+class QDateTimeAxis;
+class QChart;
 class Widget : public QWidget
 {
     Q_OBJECT
@@ -28,9 +33,21 @@ private:
     QJsonObject m_req;
     QUrl  m_url;
     QString m_token;
+    QTimer* m_timer;//用于定时查询股票价格的定时器
+    QLineSeries *m_series;
+    QString m_curStock;
+    QValueAxis* y_axis;
+    QDateTimeAxis* x_axis;
+    double m_minRate  =   0.98;
+    double m_maxRate    =   1.02;
+    QChart *m_chart;
     void sendGetRequest();
-    void makeUrl();
+    void makeUrl(QStringList codelist);
+    void initChartView();//初始化chart视图
 private slots:
     void onReplyFinished(QNetworkReply *reply);
+    void on_pushButton_clicked();
+    void updateQuery();
+    void on_listWidget_itemClicked(QListWidgetItem *item);
 };
 #endif // WIDGET_H
