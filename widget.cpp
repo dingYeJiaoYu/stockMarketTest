@@ -74,7 +74,7 @@ void Widget::makeUrl(QStringList codelist)
     params.addQueryItem("token",m_token);
     params.addQueryItem("query",jdoc.toJson());
     m_url.setQuery(params);
-    qDebug()<<m_url;
+    qDebug()<<m_req;
 }
 
 void Widget::initChartView()
@@ -106,12 +106,6 @@ void Widget::updateQuery()
 {
     QStringList codelist;
     codelist.append(m_curStock);
-    // int c   =   ui->listWidget->count();
-    // for(int i=0;i<c;i++)
-    // {
-    //     QListWidgetItem* item   =    ui->listWidget->item(i);
-    //     codelist.append(item->data(10000).toString());
-    // }
     if(codelist.isEmpty())
     {
         return;
@@ -154,11 +148,6 @@ void Widget::onReplyFinished(QNetworkReply *reply)
         m_series->append(ts,v);
 
         qDebug()<<ts<<"____"<<v;
-        // 处理 JSON 数据
-        // qDebug() << "Parsed JSON:" << jsonObject;
-        // qDebug()<<jsonObject["data"].toObject().keys();
-        // qDebug()<<jsonObject.keys();
-
     } else {
         // 输出错误信息
         qDebug() << "Error:" << reply->errorString();
@@ -178,7 +167,6 @@ void Widget::on_pushButton_clicked()
     QListWidgetItem* pitem  =   new QListWidgetItem(ui->name->text());
     pitem->setData(10000,ui->code->text());
     ui->listWidget->addItem(pitem);
-    // updateQuery();
 }
 
 
